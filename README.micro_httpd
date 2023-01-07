@@ -1,0 +1,27 @@
+	     micro_inetd - simple network service spawner
+
+Like inetd, this program listens on the net for requests and spawns
+a server to handle them.  However, it only handles one port and
+one program.  The intended use is when you have a server that
+expects to be run by inetd, but you only want to run it temporarily
+and don't want to bother with putting it into /etc/services and
+/etc/inetd.conf and restarting inetd.  Instead, just start up
+micro_inetd, and when you're done just ^C it.
+
+See the manual entry for more details.
+
+Files in this distribution:
+
+    README		this
+    Makefile		guess
+    micro_inetd.c	source file
+    micro_inetd.1	manual entry
+
+To build: If you're on a SysV-like machine (which includes old Linux systems
+but not new Linux systems), edit the Makefile and uncomment the SYSV_LIBS
+line.  Otherwise, just do a make.
+
+Feedback is welcome - send bug reports, enhancements, checks, money
+orders, etc. to the addresses below.
+
+    Jef Poskanzer  jef@mail.acme.com  http://www.acme.com/jef/

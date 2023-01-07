@@ -1,0 +1,52 @@
+.TH micro_inetd 1 "17 December 2000"
+.SH NAME
+micro_inetd - simple network service spawner
+.SH SYNOPSIS
+micro_inetd port program [args ...]
+.SH DESCRIPTION
+Like inetd, this program listens on the net for requests and spawns a
+server to handle them.
+However, it only handles one port and one program.
+The intended use is when you have a server that expects to be run by
+inetd, but you only want to run it temporarily and don't want to bother
+with putting it into /etc/services and /etc/inetd.conf and restarting inetd.
+Instead, just start up micro_inetd, and when you're done just ^C it.
+.PP
+Other limitations:
+.TP 5
+*
+Full inetd lets you specify the socket type as one of stream, dgram, raw,
+rdm, or seqpacket;  micro_inetd only implements stream.
+.TP 5
+*
+Full inetd lets you specify wait or nowait;
+micro_inetd only implements nowait.
+.TP 5
+*
+Full inetd lets you specify a user-id to run the server as;
+micro_inetd doesn't try to switch user-ids.
+.SH "SEE ALSO"
+inetd(8), inetd.conf(5)
+.SH AUTHOR
+Copyright (C) 1996,2000 by Jef Poskanzer <jef@mail.acme.com>.
+All rights reserved.
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.

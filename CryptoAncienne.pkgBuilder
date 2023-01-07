@@ -1,0 +1,71 @@
+icon	/private/Net/nova/Users/asmodai/Projects/CryptoAncienne/tls.tiff
+title	Crypto Ancienne Proxy
+version	1.0
+diskname	CryptoAncienne.NIHS.b
+location	/Net/nova/Users/asmodai/Projects/CryptoAncienne
+suggest	/usr/local
+description	Crypto Ancienne's `carl' utility compiled quad-fat.   To use, set up your browser or whatnot to use http://localhost:8765 as a proxy.
+post_install	#!/bin/sh
+post_install	_PKG="$1"
+post_install	_PATH="$2"
+post_install	_MICRO_INETD=bin/micro_inetd
+post_install	_CARL=bin/carl
+post_install	_EXISTS=`grep "Crypto Ancienne" /etc/rc.local`
+post_install	if [ -z "$_EXISTS" ]
+post_install	then
+post_install	  echo
+post_install	  echo "Modifying rc.local for Crypto Ancienne."
+post_install	  echo
+post_install	  _LINES=`wc -l /etc/rc.local | awk -F\\  '{print $1}'`
+post_install	  _PLACE=`grep -n "'.'" /etc/rc.local | awk -F: '{print $1}'`
+post_install	  _OFFSET=`echo "${_PLACE}-1" | /usr/bin/bc`
+post_install	  _REMAIN=`echo "${_LINES}-${_OFFSET}" | /usr/bin/bc`
+post_install	    
+post_install	  cp /etc/rc.local /etc/rc.local.before_tls
+post_install	  oIFS=$IFS
+post_install	  IFS=""
+post_install	  PREFIX=`head -${_OFFSET} /etc/rc.local`
+post_install	  SUFFIX=`tail -${_REMAIN} /etc/rc.local`
+post_install	  cat >/tmp/rc.tmp <<EOF
+post_install	$PREFIX
+post_install	#
+post_install	# Crypto Ancienne
+post_install	#
+post_install	(echo -n ' micro_inetd') >/dev/console
+post_install	${_PATH}/${_MICRO_INETD} 8765 ${_PATH}/${_CARL} -p
+post_install	
+post_install	$SUFFIX
+post_install	EOF
+post_install	  cp /tmp/rc.tmp /etc/rc.local
+post_install	  rm /tmp/rc.tmp
+post_install	else
+post_install	  echo
+post_install	  echo "You already have a Crypto Ancienne entry in rc.local."
+post_install	  echo "Not making any changes."
+post_install	  echo
+post_install	fi
+pre_delete	#!/bin/sh
+pre_delete	_EXISTS=`grep "Crypto Ancienne" /etc/rc.local`
+pre_delete	if [ -z "$_EXISTS" ]
+pre_delete	then
+pre_delete	  echo
+pre_delete	  echo "WARNING"
+pre_delete	  echo "No Crypto Ancienne entry in /etc/rc.local."
+pre_delete	  echo "You get to deal with this yourself."
+pre_delete	  echo
+pre_delete	else
+pre_delete	  echo "Removing rc.local entry."
+pre_delete	  if [ -f /etc/rc.local.before_tls ]
+pre_delete	  then
+pre_delete	    cp /etc/rc.local.before_tls /etc/rc.local
+pre_delete	  else
+pre_delete	    echo
+pre_delete	    echo "WARNING"
+pre_delete	    echo "No backup file found.  You get to remove it yourself."
+pre_delete	    echo
+pre_delete	  fi
+pre_delete	fi
+path	bin/carl
+path	bin/micro_inetd
+path	man/man1/carl.1
+path	man/man1/micro_inetd.1
