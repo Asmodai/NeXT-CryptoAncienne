@@ -1,6 +1,6 @@
 icon	/private/Net/nova/Users/asmodai/Projects/CryptoAncienne/tls.tiff
 title	Crypto Ancienne Proxy
-version	1.0
+version	1.1
 diskname	CryptoAncienne.NIHS.b
 location	/Net/nova/Users/asmodai/Projects/CryptoAncienne
 suggest	/usr/local
@@ -33,7 +33,6 @@ post_install	# Crypto Ancienne
 post_install	#
 post_install	(echo -n ' micro_inetd') >/dev/console
 post_install	${_PATH}/${_MICRO_INETD} 8765 ${_PATH}/${_CARL} -p
-post_install	
 post_install	$SUFFIX
 post_install	EOF
 post_install	  cp /tmp/rc.tmp /etc/rc.local

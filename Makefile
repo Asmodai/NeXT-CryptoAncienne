@@ -4,7 +4,7 @@
 # Solaris, you will need to uncomment this definition.
 #SYSV_LIBS =	-lnsl -lsocket
 
-ARCHS   = $(/usr/lib/arch_tool -archify_list i386 m68k hppa sparc)
+ARCHS   = -arch i386 -arch m68k -arch hppa -arch sparc
 STRIP   = /bin/strip
 CC      = cc
 CFLAGS  = -O3 -posix -D_POSIX_SOURCE
@@ -13,10 +13,10 @@ LDFLAGS = -lposix -lNeXT_p
 all: micro_inetd carl
 
 micro_inetd: micro_inetd.c
-	$(CC) $(CFLAGS) micro_inetd.c $(LDFLAGS) -o micro_inetd
+	$(CC) $(CFLAGS) micro_inetd.c $(LDFLAGS) $(ARCHS) -o micro_inetd
 
 carl: carl.c
-	$(CC) $(CFLAGS) carl.c $(LDFLAGS) -o carl
+	$(CC) $(CFLAGS) carl.c $(LDFLAGS) $(ARCHS) -o carl
 
 install: all
 	@echo "Setting up for PkgBuilder"
