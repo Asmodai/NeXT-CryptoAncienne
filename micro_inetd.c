@@ -25,10 +25,6 @@
 ** SUCH DAMAGE.
 */
 
-#if defined(NeXT) && defined(__MACH__)
-# define _POSIX_SOURCE
-#endif
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -43,7 +39,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#if defined(NeXT) && defined(__MACH__)
 typedef size_t socklen_t;
+#endif
+
 
 #if defined(AF_INET6) && defined(IN6_IS_ADDR_V4MAPPED)
 #define USE_IPV6

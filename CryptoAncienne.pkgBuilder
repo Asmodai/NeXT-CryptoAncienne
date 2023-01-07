@@ -1,69 +1,180 @@
-icon	/private/Net/nova/Users/asmodai/Projects/CryptoAncienne/tls.tiff
+icon	/Net/nova/Users/asmodai/Projects/CryptoAncienne/tls.tiff
 title	Crypto Ancienne Proxy
-version	1.1
+version	1.2
 diskname	CryptoAncienne.NIHS.b
 location	/Net/nova/Users/asmodai/Projects/CryptoAncienne
 suggest	/usr/local
-description	Crypto Ancienne's `carl' utility compiled quad-fat.   To use, set up your browser or whatnot to use http://localhost:8765 as a proxy.
+description	Crypto Ancienne's `carl' utility compiled quad-fat.   To use, set up your browser or whatnot to use http://localhost:8765 as a proxy for https.
 post_install	#!/bin/sh
-post_install	_PKG="$1"
-post_install	_PATH="$2"
-post_install	_MICRO_INETD=bin/micro_inetd
-post_install	_CARL=bin/carl
-post_install	_EXISTS=`grep "Crypto Ancienne" /etc/rc.local`
-post_install	if [ -z "$_EXISTS" ]
+post_install	
+post_install	DIR="$2"
+post_install	NIUTIL=/usr/bin/niutil
+post_install	GREP=/bin/grep
+post_install	
+post_install	SERVICE="tlsproxy"
+post_install	PORT="8765"
+post_install	
+post_install	# Check for service in NetInfo
+post_install	$NIUTIL -list . /services/${SERVICE} >/dev/null 2>/dev/null
+post_install	NI=$?
+post_install	
+post_install	# Check for service in /etc/services
+post_install	$GREP "$SERVICE" /etc/services >/dev/null 2>/dev/null
+post_install	SVC=$?
+post_install	
+post_install	# Check for line in /etc/inetd.conf
+post_install	$GREP "$SERVICE" /etc/inetd.conf >/dev/null 2>/dev/null
+post_install	INET=$?
+post_install	
+post_install	# Do we have a NetInfo record in /services?
+post_install	if [ ! ${NI} = 0 ]
 post_install	then
+post_install	  # No, install.
+post_install	
 post_install	  echo
-post_install	  echo "Modifying rc.local for Crypto Ancienne."
-post_install	  echo
-post_install	  _LINES=`wc -l /etc/rc.local | awk -F\\  '{print $1}'`
-post_install	  _PLACE=`grep -n "'.'" /etc/rc.local | awk -F: '{print $1}'`
-post_install	  _OFFSET=`echo "${_PLACE}-1" | /usr/bin/bc`
-post_install	  _REMAIN=`echo "${_LINES}-${_OFFSET}" | /usr/bin/bc`
-post_install	    
-post_install	  cp /etc/rc.local /etc/rc.local.before_tls
-post_install	  oIFS=$IFS
-post_install	  IFS=""
-post_install	  PREFIX=`head -${_OFFSET} /etc/rc.local`
-post_install	  SUFFIX=`tail -${_REMAIN} /etc/rc.local`
-post_install	  cat >/tmp/rc.tmp <<EOF
-post_install	$PREFIX
-post_install	#
-post_install	# Crypto Ancienne
-post_install	#
-post_install	(echo -n ' micro_inetd') >/dev/console
-post_install	${_PATH}/${_MICRO_INETD} 8765 ${_PATH}/${_CARL} -p
-post_install	$SUFFIX
-post_install	EOF
-post_install	  cp /tmp/rc.tmp /etc/rc.local
-post_install	  rm /tmp/rc.tmp
+post_install	  echo "****************************************"
+post_install	  echo "* Installing Services entry in NetInfo *"
+post_install	  echo "****************************************"
+post_install	
+post_install	  echo "Creating /services/${SERVICE}."
+post_install	  $NIUTIL -create . /services/${SERVICE}
+post_install	
+post_install	  echo "Adding /services/${SERVICE}/port = ${PORT}."
+post_install	  $NIUTIL -createprop . /services/${SERVICE} port ${PORT}
+post_install	
+post_install	  echo "Adding /services/${SERVICE}/protocol = tcp."
+post_install	  $NIUTIL -createprop . /services/${SERVICE} protocol tcp
+post_install	
+post_install	  echo "Done."
 post_install	else
-post_install	  echo
-post_install	  echo "You already have a Crypto Ancienne entry in rc.local."
-post_install	  echo "Not making any changes."
-post_install	  echo
+post_install	  echo "NetInfo /services already has ${SERVICE}, skipping."
 post_install	fi
+post_install	
+post_install	# Do we have a record in /etc/services?
+post_install	if [ ! ${SVC} = 0 ]
+post_install	then
+post_install	  # No, install.
+post_install	
+post_install	  echo
+post_install	  echo "**********************************************"
+post_install	  echo "* Installing Services entry in /etc/services *"
+post_install	  echo "**********************************************"
+post_install	
+post_install	  cp /etc/services /etc/services.before_crypto_ancienne
+post_install	  cp /etc/services /tmp/services
+post_install	
+post_install	  echo "${SERVICE}         ${PORT}/tcp     # Crypto Ancienne" >>/tmp/services
+post_install	
+post_install	  cp /tmp/services /etc/services
+post_install	  rm /tmp/services
+post_install	 
+post_install	  echo "Done."
+post_install	else
+post_install	  echo "/etc/services already has ${SERVICE}, skipping."
+post_install	fi
+post_install	
+post_install	# Do we have a line in /etc/inetd.conf?
+post_install	if [ ! ${INET} = 0 ]
+post_install	then
+post_install	  # No, install.
+post_install	
+post_install	  echo
+post_install	  echo "***********************************************"
+post_install	  echo "* Installing service entry in /etc/inetd.conf *"
+post_install	  echo "***********************************************"
+post_install	
+post_install	  cp /etc/inetd.conf /etc/inetd.conf.before_crypto_ancienne
+post_install	  cp /etc/inetd.conf /tmp/inetd.conf
+post_install	
+post_install	  echo "${SERVICE} stream tcp nowait root ${DIR}/bin/carl carl -p" >>/tmp/inetd.conf
+post_install	
+post_install	  cp /tmp/inetd.conf /etc/inetd.conf
+post_install	  rm /tmp/inetd.conf
+post_install	
+post_install	  echo "Done."
+post_install	else
+post_install	  echo "/etc/inetd.conf already has ${SERVICE}, skipping."
+post_install	fi
+post_install	
+post_install	# Restart inetd here
+post_install	PINETD=`ps auxw | grep '(inetd)' | grep -v grep | awk -F\\  '{print $2}'`
+post_install	echo "Sending HUP to inetd (${PINETD})"
+post_install	kill -HUP $PINETD
+post_install	echo "Done."
+post_install	
+post_install	# EOF
 pre_delete	#!/bin/sh
-pre_delete	_EXISTS=`grep "Crypto Ancienne" /etc/rc.local`
-pre_delete	if [ -z "$_EXISTS" ]
+pre_delete	
+pre_delete	NIUTIL=/usr/bin/niutil
+pre_delete	GREP=/bin/grep
+pre_delete	
+pre_delete	SERVICE="tlsproxy"
+pre_delete	
+pre_delete	# Check for service in NetInfo
+pre_delete	$NIUTIL -list . /services/${SERVICE} >/dev/null 2>/dev/null
+pre_delete	NI=$?
+pre_delete	
+pre_delete	# Check for service in /etc/services
+pre_delete	$GREP "$SERVICE" /etc/services >/dev/null 2>/dev/null
+pre_delete	SVC=$?
+pre_delete	
+pre_delete	# Check for line in /etc/inetd.conf
+pre_delete	$GREP "$SERVICE" /etc/inetd.conf >/dev/null 2>/dev/null
+pre_delete	INET=$?
+pre_delete	
+pre_delete	# Do we have a NetInfo record in /services?
+pre_delete	if [ ${NI} = 0 ]
 pre_delete	then
-pre_delete	  echo
-pre_delete	  echo "WARNING"
-pre_delete	  echo "No Crypto Ancienne entry in /etc/rc.local."
-pre_delete	  echo "You get to deal with this yourself."
-pre_delete	  echo
+pre_delete	  # Yes, remove.
+pre_delete	  echo "Removing /services/${SERVICE} from NetInfo."
+pre_delete	  $NIUTIL -destroy . /services/${SERVICE}
 pre_delete	else
-pre_delete	  echo "Removing rc.local entry."
-pre_delete	  if [ -f /etc/rc.local.before_tls ]
-pre_delete	  then
-pre_delete	    cp /etc/rc.local.before_tls /etc/rc.local
-pre_delete	  else
-pre_delete	    echo
-pre_delete	    echo "WARNING"
-pre_delete	    echo "No backup file found.  You get to remove it yourself."
-pre_delete	    echo
-pre_delete	  fi
+pre_delete	  echo "NetInfo /services does not have ${SERVICE}, skipping."
 pre_delete	fi
+pre_delete	
+pre_delete	# Do we have a record in /etc/services?
+pre_delete	if [ ${SVC} = 0 ]
+pre_delete	then
+pre_delete	  if [ -f /etc/services.before_crypto_ancienne ]
+pre_delete	  then
+pre_delete	    echo "Restoring /etc/services from backup."
+pre_delete	    cp /etc/services.before_crypto_ancienne /etc/services
+pre_delete	    rm /etc/services.before_crypto_ancienne
+pre_delete	  else
+pre_delete	    echo "Restoring /etc/services via script."
+pre_delete	    $GREP -v "${SERVICE}" /etc/services >/tmp/services
+pre_delete	    cp /tmp/services /etc/services
+pre_delete	    rm /tmp/services
+pre_delete	  fi
+pre_delete	else
+pre_delete	  echo "/etc/services does not have ${SERVICE}, skipping."
+pre_delete	fi
+pre_delete	
+pre_delete	# Do we have a line in /etc/inetd.conf?
+pre_delete	if [ ${INET} = 0 ]
+pre_delete	then
+pre_delete	  if [ -f /etc/inetd.conf.before_crypto_ancienne ]
+pre_delete	  then
+pre_delete	    echo "Restoring /etc/inetd.conf from backup."
+pre_delete	    cp /etc/inetd.conf.before_crypto_ancienne /etc/inetd.conf
+pre_delete	    rm /etc/inetd.conf.before_crypto_ancienne
+pre_delete	  else
+pre_delete	    echo "Restoring /etc/inetd.conf via script."
+pre_delete	    $GREP -v "${SERVICE}" /etc/inetd.conf >/tmp/inetd.conf
+pre_delete	    cp /tmp/inetd.conf /etc/inetd.conf
+pre_delete	    rm /tmp/inetd.conf
+pre_delete	  fi
+pre_delete	else
+pre_delete	  echo "/etc/inetd.conf does not have ${SERVICE}, skipping."
+pre_delete	fi
+pre_delete	
+pre_delete	# Restart inetd here
+pre_delete	PINETD=`ps auxw | grep '(inetd)' | grep -v grep | awk -F\\  '{print $2}'`
+pre_delete	echo "Sending HUP to inetd (${PINETD})"
+pre_delete	kill -HUP $PINETD
+pre_delete	echo "Done."
+pre_delete	
+pre_delete	# EOF
 path	bin/carl
 path	bin/micro_inetd
 path	man/man1/carl.1
